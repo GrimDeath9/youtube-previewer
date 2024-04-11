@@ -12,6 +12,9 @@ class archiver:
             archive = f.readlines()
             f.close()
         return [i.split("\n")[0] for i in archive]
+    
+    def get_archive(self):
+        return self.archive
 
     def add(self, id):
         if id not in self.archive:
