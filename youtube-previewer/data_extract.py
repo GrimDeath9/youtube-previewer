@@ -21,14 +21,14 @@ def get_thumbnails(videos):
 
 def flatten(container):
 	return_list = []
-	if isinstance(container, dict):
-		for _, value in container.items():
-			return_list.extend(flatten(value))
+	if isinstance(container, VideoInfo):
+		return_list = [container]
 	elif isinstance(container, list):
 		for i in container:
 			return_list.extend(flatten(i))
-	elif isinstance(container, VideoInfo):
-		return_list = [container]
+	elif isinstance(container, dict):
+		for _, value in container.items():
+			return_list.extend(flatten(value))
 	return return_list
 
 def read_file(file_name: str):
