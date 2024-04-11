@@ -2,13 +2,13 @@ import webbrowser
 from customtkinter import *
 from tkinter import Listbox
 from PIL import Image
-from archive import archiver
+from archive import Archiver
 
 class Clump:
 	"""
 	Class used to represent a single day of videos.
 	"""
-	def __init__(self, root, videos, archive: archiver):
+	def __init__(self, root, videos, archive: Archiver):
 		self.root = root
 		self.videos = videos
 		self.archive = archive
