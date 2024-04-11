@@ -26,12 +26,12 @@ class Clump:
 			highlightcolor="gray13", relief=FLAT, bd=0)
 		self.list_box.pack()
 
-		self.video_image = CTkButton(self.root, text="", image="", hover=False, 
+		self.video_image = CTkButton(self.root, hover=False, 
 			border_width=0, fg_color="gray10", command=self.openLink)
 		self.video_image.pack(padx=5)
 		
 		self.video_name = StringVar()
-		name = CTkLabel(self.root, textvariable=self.videoName, 
+		name = CTkLabel(self.root, textvariable=self.video_name, 
 			text_color='white', fg_color='gray10', width=100, pady=15)
 		name.pack(side=BOTTOM)
 
@@ -69,15 +69,7 @@ class Clump:
 			self.video_name.set(f"{select_index+1}. {self.videos[select_index].title}")
 			self.video_link = self.videos[select_index].url
 			self.video_id = self.videos[select_index].id
-
-			# Resizes the images while maintaining aspect ratio
-			# TODO: See if resize the image matters or not
-			load = Image.open(f"./Images/{self.videos[select_index].id}.png")
-			new_height = 675
-			new_width = int(new_height * (load.width / load.height))
-			load = load.resize((new_width, new_height), Image.LANCZOS)
-
-			img = CTkImage(load, size=(1200,675))
+			img = CTkImage(Image.open(f"./Images/{self.videos[select_index].id}.png"), size=(1200,675))
 			self.video_image.configure(image = img)
 			self.video_image.image = img
 
