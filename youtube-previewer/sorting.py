@@ -37,9 +37,9 @@ def __normal_sort(video_set):
 	for i in sorted(list(video_set.keys())):
 		month_year = __month_name(__drop_date(i))
 		if month_year not in month_set:
-			month_set[month_year] = [{month_year: video_set[i]}]
+			month_set[month_year] = [{__relative_date(i): video_set[i]}]
 		else:
-			month_set[month_year].append({month_year: video_set[i]})
+			month_set[month_year].append({__relative_date(i): video_set[i]})
 	return month_set
 
 def __group_videos(videos):
@@ -81,8 +81,8 @@ def __sort_videos(videos, month_grouping = False):
 		sorted_videos = {__relative_date(i, False):grouped[i] for i in sorted(list(grouped.keys()))}
 	return sorted_videos, removed_videos
 
-def get_sorted(in_file, monthGrouping = False):
+def get_sorted(in_file, group_month = False):
 	videos = pyet.get(de.read_file(in_file))
-	sorted, removed = __sort_videos(videos, monthGrouping)
+	sorted, removed = __sort_videos(videos, group_month)
 	de.get_thumbnails(de.flatten(sorted))
 	return sorted, removed
