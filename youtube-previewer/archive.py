@@ -1,4 +1,4 @@
-class archiver:
+class Archiver:
     """
     Class used to simplify interacting with archive.
     """
