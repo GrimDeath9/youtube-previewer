@@ -1,0 +1,4 @@
+archive: test/archive.txt
+main: test/base.txt
+removed: removed.txt
+check: check.txt

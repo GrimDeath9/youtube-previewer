@@ -2,6 +2,7 @@ from datetime import datetime
 from video_format import Status
 import data_extract as de
 import pyet
+import yaml
 
 """
 Functions used to sort a set of videos based on release date
@@ -74,7 +75,7 @@ def __sort_videos(videos, month_grouping = False):
 	grouped = __group_videos(videos)
 	removed_videos = [i.url for i in de.flatten(grouped.pop("private"))]
 	misc_videos = [grouped.pop(i) for i in ["copyright", "unavailable", "unsorted"]]
-	de.write_file('./check.txt', de.flatten(misc_videos))
+	de.write_file(yaml.safe_load(open('config.yaml'))['check'], de.flatten(misc_videos))
 	if month_grouping:
 		sorted_videos = __normal_sort(grouped)
 	else:
