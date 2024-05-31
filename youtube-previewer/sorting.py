@@ -1,36 +1,42 @@
 from datetime import datetime
-from video_format import Status
 import data_extract as de
-import pyet
-import yaml
+from pyet import Status, VideoInfo, get
 
 """
 Functions used to sort a set of videos based on release date
 """
 
-def __relative_date(date_string, day = True):
+def __relative_date(date: str, day = True):
 	"""
-	date_string: String of the date
+	Returns string of the relative date.
+	Expected Format: %Y-%m-%d
+	For example: Yesterday, Saturday, ...
+
 	day: Only need day or want month and year as well
 	"""
-	date = datetime.strptime(date_string, "%Y-%m-%d")
-	if day:
+	date_obj = datetime.strptime(date, "%Y-%m-%d")
+	if date_obj:
 		return date.strftime("%#d")
 	else:
 		return date.strftime("%b %#d %y")
 
-def __month_name(date_string):
+def __month_name(date: str):
 	"""
-	Get the name of the month and year from string
+	Get the name of the month and year from string.
+	Expected Format: %m-%Y
 	"""
-	date = datetime.strptime(date_string, "%m-%Y")
-	return date.strftime("%b %Y")
+	date_obj = datetime.strptime(date, "%m-%Y")
+	return date_obj.strftime("%b %Y")
 
-def __drop_date(date):
+def __drop_date(date: str):
+	"""
+	Drop the date from from given date string.
+	Expected Format: "%Y-%m-%d
+	"""
 	truncated = datetime.strptime(date, "%Y-%m-%d")
 	return truncated.strftime("%m-%Y")
 
-def __normal_sort(video_set):
+def __normal_sort(video_set: list[VideoInfo]):
 	"""
 	Sort the videos based on what month and year they were released
 	"""
@@ -43,15 +49,14 @@ def __normal_sort(video_set):
 			month_set[month_year].append({__relative_date(i): video_set[i]})
 	return month_set
 
-def __group_videos(videos):
+def __group_videos(videos: list[VideoInfo]) -> dict[str, list[VideoInfo]]:
 	"""
-	Group videos based on their accessability
+	Group videos based on their accessability.
 	"""
 	categories = {
-		"private": [],
-		"copyright": [],
-		"unavailable": [],
-		"unsorted": []
+		'potential': [],
+		'unavailable': [],
+		'unsorted': []
 	}
 	for video in videos:
 		if video.status == Status.public:
@@ -61,29 +66,38 @@ def __group_videos(videos):
 				categories[video.upload_date].append(video)
 		else:
 			match video.status:
-				case Status.private:
-					categories["private"].append(video)
-				case Status.copyright:
-					categories["copyright"].append(video)
-				case Status.unavailable:
-					categories["unavailable"].append(video)
+				case Status.copyright | Status.members:
+					categories['potential'].append(video)
+				case Status.unavailable | Status.private:
+					categories['unavailable'].append(video)
 				case _:
-					categories["unsorted"].append(video)
+					categories['unsorted'].append(video)
 	return categories
 
-def __sort_videos(videos, month_grouping = False):
+def __sort_videos(videos: list[VideoInfo], check_filepath: str, unsorted_filepath: str, group_by_month = False):
+	"""
+	Sort set of inputted videos by their date. Videos that are unavailable to be played will have their links
+	saved to the check_filepath. Videos that are for some reason unsorted, will be written to the unsorted_filepath.
+	Video sorting can be based on what month the videos were released or their specific upload dates.  
+	"""
 	grouped = __group_videos(videos)
-	removed_videos = [i.url for i in de.flatten(grouped.pop("private"))]
-	misc_videos = [grouped.pop(i) for i in ["copyright", "unavailable", "unsorted"]]
-	de.write_file(yaml.safe_load(open('config.yaml'))['check'], de.flatten(misc_videos))
-	if month_grouping:
+	removed_videos = [i.url for i in grouped.pop('unavailable')]
+	de.write_file(check_filepath, grouped.pop('potential'))
+	de.write_file(unsorted_filepath, grouped.pop('unsorted'))
+	if group_by_month:
 		sorted_videos = __normal_sort(grouped)
 	else:
 		sorted_videos = {__relative_date(i, False):grouped[i] for i in sorted(list(grouped.keys()))}
 	return sorted_videos, removed_videos
 
-def get_sorted(in_file, group_month = False):
-	videos = pyet.get(de.read_file(in_file))
-	sorted, removed = __sort_videos(videos, group_month)
+def get_sorted(in_file: str, check_file: str, unsorted_file: str, group_by_month = False):
+	"""
+	Sorts the videos that have their urls within the in_file path by their upload date. Videos that are unavailable 
+	to be played will have their links 	saved to the check_filepath. Videos that are for some reason unsorted, will 
+	be written to the unsorted_filepath. Video sorting can be based on what month the videos were released or their 
+	specific upload dates. 
+	"""
+	videos = get(de.read_file(in_file))
+	sorted, removed = __sort_videos(videos, check_file, unsorted_file, group_by_month)
 	de.get_thumbnails(de.flatten(sorted))
 	return sorted, removed
