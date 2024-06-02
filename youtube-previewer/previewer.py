@@ -14,7 +14,10 @@ class Previewer:
 		self.clear_dead(config['main'], removed, self.archive.get_archive())
 		atexit.register(self.save)
 		
-	def save(self):
+	def __exit__(self):
+		"""
+		Save data from archive
+		"""
 		self.archive.save()
 
 	def unpack(self, tabview, month, archive):
@@ -52,4 +55,4 @@ class Previewer:
 		text = [i.split("\n")[0] for i in text]
 		text = [i for i in text if i not in removed+archive]
 		write_file(input_file, text, 'w')
-		write_file('./removed.txt', removed)
+		write_file('./removed.txt', removed) # TODO: Fix static file
