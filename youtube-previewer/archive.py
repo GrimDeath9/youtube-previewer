@@ -20,9 +20,9 @@ class Archiver:
         if id not in self.archive:
             self.toAdd.append(id)
     
-    def save(self, file = "archive.txt"):
+    def save(self, file = 'archive.txt'):
         to_add = [i for i in self.to_add if i not in self.archive]
         with open(file, 'a') as f:
             for i in to_add:
-                f.write(f"{i}\n")
+                f.write(f'{i}\n')
             f.close()
