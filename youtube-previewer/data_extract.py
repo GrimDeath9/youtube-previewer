@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 import os
 import requests
-from video_format import VideoInfo
+from pyet import VideoInfo
 
 """
 Set of commonly used or nice to have functions
@@ -13,13 +13,19 @@ def __download(video: VideoInfo):
 	thumb = Image.open(BytesIO(requests.get(video.thumbnail).content))
 	thumb.save(f"./Images/{video.id}.png")
 
-def get_thumbnails(videos):
-	if not os.path.exists('./Images/'):
-		os.mkdir("./Images")
+def get_thumbnails(videos: list[VideoInfo], destination = './Images'):
+	"""
+	Saves the thumbnails of all the videos to the destination directory.
+	"""
+	if not os.path.exists(destination):
+		os.mkdir(destination)
 	with ThreadPoolExecutor() as executor:
 		executor.map(__download, videos)
 
-def flatten(container):
+def flatten(container) -> list[VideoInfo]:
+	"""
+	Flatten the given structure to a list of VideoInfo
+	"""
 	return_list = []
 	if isinstance(container, VideoInfo):
 		return_list = [container]
@@ -32,13 +38,19 @@ def flatten(container):
 	return return_list
 
 def read_file(file_name: str):
+	"""
+	Reads the contents of a file and removes any new line character from each string.
+	"""
 	with open(file_name, 'r') as f:
-		text = [i.split("\n")[0] for i in f.readlines()]
+		text = [i.replace('\n','') for i in f.readlines()]
 		f.close()
 	return text
 
 def write_file(file_name: str, data: list, setting = 'a'):
+	"""
+	Writes all elements of the given list to the given filepath.
+	"""
 	with open(file_name, setting) as f:
 		for i in data:
-			f.write(f"{i}\n")
+			f.write(f'{i}\n')
 		f.close()
