@@ -2,8 +2,8 @@ import aiohttp
 import asyncio
 import time
 
-from video_format import VideoInfo
-from link_format import format_id_short, format_short
+from .video_format import VideoInfo
+from .link_format import format_id_short, format_short
 
 async def __request(session, url):
 	async with session.get(url) as r:
