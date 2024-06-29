@@ -5,3 +5,7 @@ read = ''
 [output]
 removed = ''
 check = ''
+
+[display]
+optimize_layout = true
+group_by_month = true # Is ignored if optimize is enabled
