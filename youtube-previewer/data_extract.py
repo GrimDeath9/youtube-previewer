@@ -11,7 +11,7 @@ Set of commonly used or nice to have functions
 
 def __download(video: VideoInfo):
 	thumb = Image.open(BytesIO(requests.get(video.thumbnail).content))
-	thumb.save(f"./Images/{video.id}.png")
+	thumb.save(f'./Images/{video.id}.png')
 
 def get_thumbnails(videos: list[VideoInfo], destination = './Images'):
 	"""
