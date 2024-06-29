@@ -17,34 +17,27 @@ async def __multiscrape(session, urls):
 	results = await asyncio.gather(*tasks)
 	return results
 
-async def __main(urls):
-	async with aiohttp.ClientSession() as session:
+async def __main(urls, limit=25):
+	connector = aiohttp.TCPConnector(limit=limit)
+	async with aiohttp.ClientSession(connector=connector) as session:
 		output = await __multiscrape(session, urls)
 		return output
 
-def __scrape(urls):
+def __scrape(urls, limit):
 	loop = asyncio.get_event_loop()
-	return loop.run_until_complete(__main(urls))
+	return loop.run_until_complete(__main(urls, limit))
 
 def __single(input: str):
 	formatted_input = format_short(input)
 	page_info = __scrape([formatted_input])[0]
 	return VideoInfo((formatted_input[-11:], page_info))
 
-def __get(input: list):
+def __get(input: list, limit=25):
 	ids, formatted_list = format_id_short(input)
-	page_infos = __scrape(formatted_list)
+	page_infos = __scrape(formatted_list, limit)
 	return [VideoInfo(i) for i in zip(ids, page_infos)]
-		
-def __staggered(input: list, chunk_size: int, delay: int) -> list[VideoInfo]:
-	groups = [input[pos:pos+chunk_size] for pos in range(0, len(input), chunk_size)]
-	returned = []
-	for i in groups:
-		returned.append(get(i))
-		time.sleep(delay)
-	return returned
 
-def get(video_input, batch_size = 50, delay = 1):
+def get(video_input: list[str]):
 	"""
 	Gets the metadata of the given video(s). If 50 or more videos are given via list, will used staggered 
 	method to get videos. This is due to potential rate limit on request from YouTube or Google. The size
@@ -53,7 +46,7 @@ def get(video_input, batch_size = 50, delay = 1):
 	"""
 	if isinstance(video_input, str):
 		return __single(video_input)
-	elif isinstance(video_input, list) and len(video_input) <= 50:
-		return __get(video_input)
+	elif isinstance(video_input, list):
+		return __get(video_input) if len(video_input) < 50 else __get(video_input, 15)
 	else:
-		return __staggered(video_input, batch_size, delay)
+		raise TypeError("Given input is not in list format")
