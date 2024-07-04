@@ -65,7 +65,7 @@ def __format_id_header(list: list, header: str):
     ids = filter_ids(list)
     return ids, __unsafe_format(ids, header)
 
-def format_short(input: list | str):
+def format_short(input: list | str) -> list | str:
     """
     Formats the given link into the format https://youtu.be/{id}.
     """
