@@ -1,5 +1,7 @@
+# Program Generated
 __pycache__
 Images
 test
-template
-env
+
+# VSCode Generated
+.vscode
