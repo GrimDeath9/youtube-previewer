@@ -9,6 +9,7 @@ class Config:
         self.removed = data['output']['check']
         self.optimize = data['display']['optimize_layout']
         self.by_month = data['display']['group_by_month']
+        self.misc = data['output']['misc']
 
     def __str__(self) -> str:
         return str(self.__dict__)

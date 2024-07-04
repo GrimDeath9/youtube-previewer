@@ -3,6 +3,7 @@ archive = ''
 read = ''
 
 [output]
+misc = ''
 removed = ''
 check = ''
 
