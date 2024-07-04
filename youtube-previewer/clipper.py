@@ -1,26 +1,29 @@
 from customtkinter import *
 from tkinter import TclError
+
 from data_extract import write_file, read_file
-import pyet as lf
+from pyet import format_short
+from config import Config
 
 class Clipper:
 	"""
-	Class used to take all valid YouTube links and add to a list
+	Clipper is a class used to read new links from the clipboard.
 	"""
-	def __init__(self, root: CTk, copied: list, width: int, height: int):
-		self.copied = copied
+	def __init__(self, root: CTk, output: list[str], config: Config, width = 225, height = 500):
+		self.copied = output
 		self.base = root
-		self.misc = read_file('misc.txt')
+		self.file = config.misc
+		self.board_manager = _Board_Manager(self.file)
 		self.__setup_window(width, height)
 
 	def __setup_window(self, width, height):
 		self.root = CTkToplevel()
-		posX = self.base.winfo_x() + (self.base.winfo_width() - width)/2
-		posY = self.base.winfo_y() + (self.base.winfo_height() - height)/2
+		x_pos = self.base.winfo_x() + (self.base.winfo_width() - width)/2
+		y_pos = self.base.winfo_y() + (self.base.winfo_height() - height)/2
 		self.root.title("Link Grabber")
-		self.root.geometry(f'{width}x{height}+{int(posX)}+{int(posY)}')
+		self.root.geometry(f'{width}x{height}+{int(x_pos)}+{int(y_pos)}')
 		self.root.grab_set()
-		self.root.bind('<F5>', lambda _: self.root.destroy())
+		self.root.bind('<F5>', lambda _: self.__close())
 		self.root.after(ms=100, func=self.__check_board)
 
 		self.text_box = CTkTextbox(self.root, width, height)
@@ -30,7 +33,7 @@ class Clipper:
 
 	def __check_board(self):
 		try:
-			text = self.__filter_videos(self.__clean(self.base.clipboard_get()))
+			text = self.board_manager.filter(self.base.clipboard_get())
 			self.text_box.configure(state='normal')
 			for i in text:
 				if i not in self.copied:
@@ -40,46 +43,38 @@ class Clipper:
 		except TclError:
 			pass
 		self.root.after(ms=250, func=self.__check_board)
-	
-	def __filter_videos(self, in_list: list):
-		out = lf.format_short(in_list)
-		filter_lambda = lambda x : (
-			'https://youtu.be/' not in x and 
-			'https://www.youtube.com/watch?v=' not in x and 
+
+	def __close(self):
+		self.root.destroy()
+		write_file(self.misc_file, self.board_manager.misc)
+
+class _Board_Manager:
+	"""
+	Does all functions regarding filtering new links.
+	"""
+	def __init__(self, misc_filepath: str):
+		self.misc = read_file(misc_filepath)
+		self.cleaning_filter = lambda x: (
+			'—' not in x and
+			'OP' not in x
+		)
+		self.valid_filter = lambda x : (
+			'https://youtu.be/' not in x and
+			'https://www.youtube.com/watch?v=' not in x and
 			x not in self.misc
 		)
-		misc = list(filter(filter_lambda, in_list))
-		self.misc.extend(misc)
-		write_file('./misc.txt', misc)
-		return out
-	
-	@staticmethod
-	def __clean(text: list):
-		text = text.split('\n')
-		out = []
-		# Removes the 2 lines of text after YouTube i.e. Title and Author 
+		
+	def filter(self, in_list: list[str]):
+		text = in_list.split('\n')
+		cleaned = []
+		# Removes the 3 lines of text after YouTube, should remove video title, author, and image
 		if len(text) != 1:
-			for i in range(len(text)):
-				try:
-					if text[i-2] != 'YouTube' and text[i-1] != 'YouTube':
-						out.append(text[i])
-				except IndexError:
-					out.append[i]
+			for i, item in enumerate(text):
+				if item == 'YouTube': text = text[:i] + text[i+4:]
 		else:
-			out.extend(text)
-		for i in ['YouTube', 'Image', '\n', ' — ', 'OP']:
-			out = list(filter(lambda x: i not in x, out))
-		return out
-
-if __name__ == '__main__':
-	from customtkinter import *
-
-	root = CTk()
-	root.geometry('900x600+480+270')
-	temp = root.winfo_width()
-	textLabel = CTkLabel(root, text = 'Test')
-	textLabel.pack()
-	out = []
-	root.bind('<F5>', lambda _: Clipper(root, out, 225, 500))
-	root.bind('<F6>', lambda _: print(out))
-	root.mainloop()
+			cleaned.extend(text)
+		cleaned = list(filter(self.cleaning_filter, cleaned))
+		
+		shortened = format_short(cleaned)
+		self.misc.extend(list(filter(self.valid_filter, shortened)))
+		return shortened
