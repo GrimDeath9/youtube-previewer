@@ -1,7 +1,11 @@
 # Program Generated
-__pycache__
-Images
-test
+__pycache__/
+Images/
+test/
+
+# User specific
+env/
+instance/
 
 # VSCode Generated
 .vscode
