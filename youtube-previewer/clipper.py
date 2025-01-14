@@ -11,6 +11,7 @@ class Clipper:
 	def __init__(self, root: CTk, output: list[str], width = 225, height = 500):
 		self.copied = output
 		self.base = root
+		global config
 		self.file = config.misc
 		self.board_manager = _Board_Manager(self.file)
 		self.__setup_window(width, height)
