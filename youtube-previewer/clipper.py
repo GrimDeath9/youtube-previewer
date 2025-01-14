@@ -1,4 +1,4 @@
-from customtkinter import *
+from customtkinter import CTkToplevel, CTkTextbox, CTk
 from tkinter import TclError
 
 from .data_extract import write_file, read_file
