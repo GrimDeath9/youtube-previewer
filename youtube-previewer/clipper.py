@@ -3,20 +3,20 @@ from tkinter import TclError
 
 from .data_extract import write_file, read_file
 from .pyet import format_short
+from .config import Config
 
 class Clipper:
 	"""
 	Class used to read new links from the clipboard.
 	"""
-	def __init__(self, root: CTk, output: list[str], width = 225, height = 500):
+	def __init__(self, root: CTk, output: list[str], config: Config, width = 225, height = 500):
 		self.copied = output
 		self.base = root
-		global config
 		self.file = config.misc
 		self.board_manager = _Board_Manager(self.file)
-		self.__setup_window(width, height)
+		self.__setup_window(width, height, config.keybind['clipper'])
 
-	def __setup_window(self, width, height):
+	def __setup_window(self, width: int, height: int, keybind: str):
 		"""
 		cTk for window that shows copied links
 		"""
@@ -26,7 +26,7 @@ class Clipper:
 		self.root.title("Link Grabber")
 		self.root.geometry(f'{width}x{height}+{x_pos}+{y_pos}')
 		self.root.grab_set()
-		self.root.bind(f'<{config.keybind['clipper']}>', lambda _: self.root.destroy())
+		self.root.bind(f'<{keybind}>', lambda _: self.root.destroy())
 		self.root.after(ms=100, func=self.__check_board)
 
 		self.text_box = CTkTextbox(self.root, width, height)
