@@ -1,15 +1,14 @@
 from customtkinter import *
 from tkinter import TclError
 
-from data_extract import write_file, read_file
-from pyet import format_short
-from config import Config
+from .data_extract import write_file, read_file
+from .pyet import format_short
 
 class Clipper:
 	"""
-	Clipper is a class used to read new links from the clipboard.
+	Class used to read new links from the clipboard.
 	"""
-	def __init__(self, root: CTk, output: list[str], config: Config, width = 225, height = 500):
+	def __init__(self, root: CTk, output: list[str], width = 225, height = 500):
 		self.copied = output
 		self.base = root
 		self.file = config.misc
@@ -17,13 +16,16 @@ class Clipper:
 		self.__setup_window(width, height)
 
 	def __setup_window(self, width, height):
+		"""
+		cTk for window that shows copied links
+		"""
 		self.root = CTkToplevel()
-		x_pos = self.base.winfo_x() + (self.base.winfo_width() - width)/2
-		y_pos = self.base.winfo_y() + (self.base.winfo_height() - height)/2
+		x_pos = int(self.base.winfo_x() + (self.base.winfo_width() - width)/2)
+		y_pos = int(self.base.winfo_y() + (self.base.winfo_height() - height)/2)
 		self.root.title("Link Grabber")
-		self.root.geometry(f'{width}x{height}+{int(x_pos)}+{int(y_pos)}')
+		self.root.geometry(f'{width}x{height}+{x_pos}+{y_pos}')
 		self.root.grab_set()
-		self.root.bind('<F5>', lambda _: self.__close())
+		self.root.bind(f'<{config.keybind['clipper']}>', lambda _: self.root.destroy())
 		self.root.after(ms=100, func=self.__check_board)
 
 		self.text_box = CTkTextbox(self.root, width, height)
@@ -32,6 +34,9 @@ class Clipper:
 		self.text_box.pack()
 
 	def __check_board(self):
+		"""
+		Function that filters good links
+		"""
 		try:
 			text = self.board_manager.filter(self.base.clipboard_get())
 			self.text_box.configure(state='normal')
@@ -44,13 +49,15 @@ class Clipper:
 			pass
 		self.root.after(ms=250, func=self.__check_board)
 
-	def __close(self):
-		self.root.destroy()
-		write_file(self.misc_file, self.board_manager.misc)
+	def __enter__(self):
+		return self
+	
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		write_file(self.file, self.board_manager.misc)
 
 class _Board_Manager:
 	"""
-	Does all functions regarding filtering new links.
+	Class that does all filtering for new links. Does so via built-in filter and lambdas for filters
 	"""
 	def __init__(self, misc_filepath: str):
 		self.misc = read_file(misc_filepath)
