@@ -1,12 +1,15 @@
 [read]
-archive = ''
-read = ''
+database = './data.db'
+read = './test/test.txt'
 
 [output]
-misc = ''
-removed = ''
-check = ''
+misc = './test/misc.txt'
+removed = './test/removed.txt'
+check = './test/check.txt'
 
 [display]
-optimize_layout = true
-group_by_month = true # Is ignored if optimize is enabled
+optimize_layout = false
+group_by_month = false # Is ignored if optimize is enabled
+
+[keybinds]
+clipper = 'F5'
